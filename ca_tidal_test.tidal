@@ -1,0 +1,31 @@
+-- some toying around with cellular automata patterns
+
+-- 2D CA
+-- rule 110
+caPat "000" = False
+caPat "001" = True
+caPat "010" = True
+caPat "100" = False
+caPat "011" = True
+caPat "110" = True
+caPat "101" = True
+caPat "111" = False
+
+expandList x = last x:x ++ [head x]
+
+twoDca x y = if length x < 3 then reverse y else twoDca (tail x) (caPat (take 3 x):y)
+
+iterTwoD 0 x = return(x)
+iterTwoD n x = do
+   iterTwoD (n-1) (twoDca (expandList x) [])
+
+hush
+
+let pat = "010110"
+let u = listToPat (twoDca (expandList pat) [])
+
+let u = listToPat (iterTwoD 23 pat)
+
+ :t u
+
+d1 $ struct u $ sound "cp"

@@ -1,0 +1,63 @@
+-- some tests to mask parts of a longer pattern in order to filter a shortr pattern
+
+
+-- some simple funs to manipulate lists
+reOrgList n x = drop n x ++ take n x
+maskPat l x = take l x
+maskPat' o l x = take l (drop o x)
+
+ -- a rather long list from the OEIS database
+
+let list_oeis = [1, 1, 2, 2, 4, 2, 6, 4, 6, 4, 10, 4, 12, 6, 8, 8, 16,6,
+                   18, 8, 12, 10, 22, 8, 20, 12, 18, 12, 28, 8, 30, 16]
+
+
+-- generate a short pattern from modified list
+
+let w = reOrgList 6 list_oeis
+    s_pat = maskPat' 2 8 w
+
+
+pick x = maskPat' x 8 w
+
+pick [1,2,3]
+
+  
+d1 $ slow 1 $ note (listToPat (s_pat)) # s "bassdm*4 cpu2*4" # cut 1 #
+gain 0.4
+
+
+d1 $ n (cycleChoose [1,2,3]*4) # "bd*4" # gain 0.6
+
+
+d2 $ slice 6 (listToPat (reverse s_pat)) $ note (listToPat s_pat) # s "bev" # cut 1 # gain 0.8
+
+hush
+
+
+-- second attempt 24-07-04
+
+ 
+-- pick num lis = maskPat' num 8 lis
+pick num = maskPat' num 8 w
+
+-- fix here map with one mapping input!!!
+
+let w = reOrgList 5 list_oeis
+    myList = [0,2,5,7,1]
+    a = map pick myList 
+    b = map listToPat a
+-- let that be my control list (indices to start from)
+   -- generate a list of lists
+  -- generate a list of patterns
+
+  -- test
+
+-- select from these pre-generated patterns
+select 0.1 b
+
+
+b
+
+
+d1 $ fast 1 $ n (select rand b) # s "[supermandolin, cpu2]" # gain 0.8
