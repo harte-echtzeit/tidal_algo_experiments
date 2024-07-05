@@ -26,6 +26,8 @@ pick [1,2,3]
 d1 $ slow 1 $ note (listToPat (s_pat)) # s "bassdm*4 cpu2*4" # cut 1 #
 gain 0.4
 
+d1 $ fast 8 $ note (cycleChoose s_pat) # s "bassdm:1" # cut 1 #
+gain 0.6
 
 d1 $ n (cycleChoose [1,2,3]*4) # "bd*4" # gain 0.6
 
@@ -55,12 +57,23 @@ let w = reOrgList 8 list_oeis
 -- here w can also just be 'list_oeis' or any other list
 let maskPats = map listToPat (map (\x -> maskPat' x 8 w) pointerList)
     maskPats' = map listToPat (map (\x -> maskPat' x 8 w) (reverse pointerList))
+
+-- alternatively = def as a fun and excetute inside orbit -> maybe for agile for live situations
+
+maskPatsGen pointer = map listToPat (map (\x -> maskPat' x 8 w) pointer)
     
--- select from these pre-generated patterns (example
+-- select from these pre-generated patterns (examples only to check patterns)
 select 0.25 maskPats
+squeeze "[0, 1]" maskPats
 
 --some sounds to play with
 d1 $ fast 1 $ n (select "<0.1 0.7 0.2 0.8 0.3 0.5>" maskPats) # s "[supermandolin, cpu2]" # gain 0.8
+
+d1 $ fast 1 $ n (squeeze "<0 3 9 3>" maskPats) # s "[supermandolin, cpu2]" # gain 0.8
+
+
+-- using the function instead of pre-generated patterns
+d1 $ fast 1 $ note (squeeze "<0 3 1 4>" (maskPatsGen [0,1,2,3,4])) # s "[cpu2:0, cpu2:2]" # gain 0.8
 
 
 -- third attempt 24-07-04 -> taken from tidal club forum --> https://club.tidalcycles.org/t/getting-the-current-cycle-number/459
