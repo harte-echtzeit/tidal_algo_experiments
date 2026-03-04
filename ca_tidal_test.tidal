@@ -11,21 +11,82 @@ caPat "110" = True
 caPat "101" = True
 caPat "111" = False
 
-expandList x = last x:x ++ [head x]
+-- simple rule 110 set
+-- caPat [0,0,0] = 0
+-- caPat [0,0,1] = 1
+-- caPat [0,1,0] = 1
+-- caPat [1,0,0] = 0
+-- caPat [0,1,1] = 1
+-- caPat [1,1,0] = 1
+-- caPat [1,0,1] = 1
+-- caPat [1,1,1] = 0
 
+-- caPat "000" = "f"
+-- caPat "001" = "t"
+-- caPat "010" = "t"
+-- caPat "100" = "f"
+-- caPat "011" = "t"
+-- caPat "110" = "t"
+-- caPat "101" = "t"
+-- caPat "111" = "f"
+
+-- a simple 1D iterator for CA rules assessment without any padding
 twoDca x y = if length x < 3 then reverse y else twoDca (tail x) (caPat (take 3 x):y)
 
+-- take a sample pattern (here son clave
+-- son = [1,0,0,1,0,0,1,0,0,0,1,0,1,0,0,0]
+son = "100100100010100"
+-- needs rework here on output type -> now bool, maybe change to string? to enable repeated calls
+son
+
+listToPat son
+
+d1 $ slow 1 $ struct son $ sound "cp"
+
+
+-- first iteration 1D-CA -shortens as no padding is applied
+z = twoDca son []
+
+z
+
+d1 $ slow 1 $ struct (listToPat z) $ sound "cp"
+
+
+
+-- can NOT yet be called repeatedly on result => needs re-work of types
+zz = twoDca z []
+
+length zz
+
+
+
+-- helper to enable padding (adds first and last element to list of lenght n so that temporayly n=n+2  and  CA results in new length with same size n 
+expandList x = last x:x ++ [head x]
+
+let pat = "010110"
+
+-- example of padding within CA
+let u = listToPat (twoDca (expandList pat) [])
+
+u = (twoDca (expandList pat) [])
+
+length u
+
+pat = "010110"
+
+length pat
+
+
+let u = listToPat (iterTwoD 23 pat)
+
+d1 $ slow 2 $ struct (listToPat (twoDca son [])) $ sound "cp"
+
+-- d1 $ slow 2 $ stack[ struct son $ sound "bd" # gain 0.7,struct z $ s "bd"]
+
+
+-- should enable repeated calls for a fixed number of iterations (NOT working, needs work on types!=
 iterTwoD 0 x = return(x)
 iterTwoD n x = do
    iterTwoD (n-1) (twoDca (expandList x) [])
 
 hush
-
-let pat = "010110"
-let u = listToPat (twoDca (expandList pat) [])
-
-let u = listToPat (iterTwoD 23 pat)
-
- :t u
-
-d1 $ struct u $ sound "cp"

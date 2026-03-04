@@ -69,7 +69,7 @@ squeeze "[0, 1]" maskPats
 --some sounds to play with
 d1 $ fast 1 $ n (select "<0.1 0.7 0.2 0.8 0.3 0.5>" maskPats) # s "[supermandolin, cpu2]" # gain 0.8
 
-d1 $ fast 1 $ n (squeeze "<0 3 9 3>" maskPats) # s "[supermandolin, cpu2]" # gain 0.8
+d1 $ fast 1 $ n (squeeze "<0 2 9 3>" maskPats) # s "[supermandolin, cpu2]" # gain 0.8
 
 
 -- using the function instead of pre-generated patterns
@@ -83,7 +83,7 @@ let mylist = [1,2,6,3,50,14,31,34,2,6]
 
 let l = pure (length mylist)
 
-let pat = segment 1 $ (mylist !!) <$> (mod (sig floor) (l))
+let pat = segment 4 $ (mylist !!) <$> (mod (sig floor) (l))
 
 (mylist !!) <$> (mod (sig floor) (l))
 
