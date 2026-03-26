@@ -35,8 +35,11 @@ twoDca x y = if length x < 3 then reverse y else twoDca (tail x) (caPat (take 3 
 
 -- take a sample pattern (here son clave
 -- son = [1,0,0,1,0,0,1,0,0,0,1,0,1,0,0,0]
+
 son = "100100100010100"
+
 -- needs rework here on output type -> now bool, maybe change to string? to enable repeated calls
+
 son
 
 listToPat son
@@ -84,9 +87,33 @@ d1 $ slow 2 $ struct (listToPat (twoDca son [])) $ sound "cp"
 -- d1 $ slow 2 $ stack[ struct son $ sound "bd" # gain 0.7,struct z $ s "bd"]
 
 
--- should enable repeated calls for a fixed number of iterations (NOT working, needs work on types!=
+-- This works in principle but the types for the very last bit are problematic
+
+-- rule 110
+caPat "000" = '0'
+caPat "001" = '1'
+caPat "010" = '1'
+caPat "100" = '0'
+caPat "011" = '1'
+caPat "110" = '1'
+caPat "101" = '1'
+caPat "111" = '0'
+
+expandList x = last x:x ++ [head x]
+
+twoDca x y = if length x < 3 then reverse y else twoDca (tail x) (caPat (take 3 x):y)
+
 iterTwoD 0 x = return(x)
 iterTwoD n x = do
    iterTwoD (n-1) (twoDca (expandList x) [])
+
+let pp = "10011100"
+
+let cap = (iterTwoD 4 pp)
+
+cap
+
+-- here the type of cap is the problem!!
+d1 $ struct (listToPat cap) $ n "1!8" # s "sd"
 
 hush
