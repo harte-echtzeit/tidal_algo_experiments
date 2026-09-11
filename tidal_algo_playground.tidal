@@ -1,0 +1,175 @@
+-- to be defined
+
+chaos f x n =
+  fastcat $ map quantise $ take n $ iterate f x
+
+  quantise x = ...
+
+ f x = ...
+
+
+-- STARTER
+
+f x = sin (x * x)
+fastcat $ map (\x -> note (show (round (60 + x * 12)))) (map f [0..15])
+
+-- cleaner = working!
+
+sin
+cos
+tan
+tanh
+exp
+log
+sqrt
+abs
+
+d1 $ n (mathNotes (\x -> sin (x*x)) 32) # s "superpiano"
+
+f x = exp (-x*x)
+f x = sin x + 0.5 * cos (3*x)
+
+mathNotes :: (Double -> Double) -> Int -> Pattern Note
+mathNotes f n =
+  fastcat $
+    map (\i ->
+      let x = fromIntegral i / fromIntegral n * 2 * pi
+          y = f x
+          midi :: Int
+          midi = round (60 + 12 * y)
+      in pure (fromIntegral midi))
+    [0 .. n - 1]
+
+d1 $ n (mathNotes tanh 8) # s "superpiano"
+
+d1 $ n (mathNotes (log) 8) # s "superpiano"
+
+
+mathPattern f n =
+  fastcat $
+    map (\i ->
+      let x = fromIntegral i / fromIntegral n * 2 * pi
+          y = f x
+          midi :: Int
+          midi = round (60 + 12 * y)
+      in pure (fromIntegral midi))
+    [0 .. n - 1]
+
+d1 $ n (mathPattern sin 16) # s "superpiano"
+
+    
+
+mathScale f n =
+  fastcat $
+    map (\i ->
+      let x = fromIntegral i / fromIntegral n * 2 * pi
+          y = f x
+          degree :: Int
+          degree = round (3.5 + 3.5 * y)
+      in pure (fromIntegral degree))
+    [0 .. n - 1]
+    
+d1 $
+  n (mathScale cos 8)
+  -- # scale "c:minor"
+  # s "supersaw"
+
+
+mathScale f degrees n =
+  fastcat $
+    map (\i ->
+      let x = fromIntegral i / fromIntegral n * 2 * pi
+          y = f x
+          degree :: Int
+          degree = round ((fromIntegral (degrees - 1) / 2)
+                          + (fromIntegral (degrees - 1) / 2) * y)
+      in pure (fromIntegral degree))
+    [0 .. n - 1]
+
+
+d1 $
+  n (mathScale cos 12 4)
+  -- # scale "c:minor"
+  # s "supersaw"
+
+
+mathValues f n =
+  map (\i ->
+    let x = fromIntegral i / fromIntegral n * 2 * pi
+    in f x)
+    [0 .. n - 1]
+
+
+  mathValues sin 16
+
+-- some GW things (emulation of a GW with chirped phase
+
+phase t = 1 + 3 * t + (1/2) * 0.04 * t**2
+
+phase_freq t = 100 + 3 * t + (1/2) * 40 * t**2
+
+mathValues phase_freq 16
+
+gw t = 1 + sin(phase t)
+
+mathValues gw 8
+
+d2 $ slow 4
+  -- $ zoom (0.1 ,0.2)
+  -- $ n (fastcat $ mathScale phase 16)
+  $ n (mathScale phase 9)
+  # s "superpiano"
+
+  mathNotes tanh 8
+
+  mathNotes phase 8
+
+  d1 $ sometimes (jux rev)
+  $ rarely (shuffle 4)
+  $ n (mathNotes gw 8)
+  # octave 2
+  # s "superpiano"
+  # bpf (400 + (rev (fastcat $ mathValues phase_freq 8)))
+  # velocity 0.8
+  # legato 2.4
+  # lock 1 # delay 0.4 # delayt (2/8) # delayfb 0.5
+  # gain 0.5
+  # room 0.8 # sz 0.8 # dry 0.1
+
+
+  mathValues phase 8
+
+  mathScale gw 24 8
+
+
+  d2 $ rarely (# nudge (fastcat $ mathValues gw 8))
+  $ n (mathScale gw 8 8)
+  -- $ n (segment 8 $ irand 8)
+  # s "supersaw"
+  # lfo 40
+  # octave 3
+  # att 0.01
+  # hold 0.06
+  # rel 0.05
+  # room 0.6 # sz 0.2 # dry 0.3
+  # lock 1 # delay 0.2 # delayt (2/8) # delayfb 0.4
+  -- # hpfbus 1 (segment 128 $ fast 8 $ range 200 1000 $ (fastcat $ mathValues phase_freq 8))
+  # lpfbus 2 (segment 128 $ fast 8 $ range 200 1900 $ sine)
+  # gain 0.6
+
+  binaryN "b" 16
+
+
+(fastcat $ mathValues phase_freq 8)
+
+  gw 8
+
+
+  d3 -- $ degradeBy 0.4
+  $ struct "t(7,16, <0 2>)"
+  $ note (mathScale gw 24 8)
+  # octave "<4 3 5 3>"
+  # s "gw_kick:9"
+  -- # lpf 600
+
+mathScale gw 12 8

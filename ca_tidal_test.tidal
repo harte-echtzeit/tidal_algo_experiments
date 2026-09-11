@@ -109,11 +109,11 @@ iterTwoD n x = do
 
 let pp = "10011100"
 
-let cap = (iterTwoD 4 pp)
+let cap = (iterTwoD 1 pp)
 
 cap
 
 -- here the type of cap is the problem!!
-d1 $ struct (listToPat cap) $ n "1!8" # s "sd"
+d4 $ struct (listToPat cap) $ n "1!8" # s "sd"
 
 hush

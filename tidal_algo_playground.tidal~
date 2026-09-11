@@ -1,0 +1,58 @@
+-- to be defined
+
+chaos f x n =
+  fastcat $ map quantise $ take n $ iterate f x
+
+  quantise x = ...
+
+ f x = ...
+
+
+--- another example
+
+mathPattern f n =
+  fastcat $
+    map (\x -> round (7 * normalise (f x)))
+    [0..n-1]
+
+d1 $
+  n (mathPattern (\x -> sin (x*x)) 32)
+  # scale "c:minor"
+  # s "superpiano"
+  
+mathScale f n =
+  fastcat $
+    map (\i ->
+      let x = fromIntegral i / fromIntegral n * 2 * pi
+          y = f x
+      in round (3.5 + 3.5 * y))
+      [0..n-1]
+
+-- STARTER
+
+f x = sin (x * x)
+
+fastcat $ map (\x -> note (show (round (60 + x * 12)))) (map f [0..15])
+
+-- cleaner
+
+mathNotes f n =
+  fastcat $
+    map (\i -> round (60 + 12 * f (fromIntegral i / fromIntegral n * 2 * pi)))
+        [0..n-1]
+
+    d1 $ mathNotes sin 16
+
+
+mathScale f n =
+  fastcat $
+    map (\i ->
+      let x = fromIntegral i / fromIntegral n * 2 * pi
+          y = f x
+      in round (3.5 + 3.5 * y))
+      [0..n-1]
+
+d1 $
+  n (mathScale sin 16)
+  -- # scale "c:minor"
+  # s "supersaw"
