@@ -173,3 +173,184 @@ d2 $ slow 4
   -- # lpf 600
 
 mathScale gw 12 8
+
+
+
+--- more generative
+
+chaosScale f x degrees n =
+  fastcat $
+    map (\y ->
+      let degree :: Int
+          degree = round ((fromIntegral (degrees - 1)) * y)
+      in pure (fromIntegral degree))
+    (take n (iterate f x))
+
+logistic r x = r * x * (1 - x)
+
+d1 $ slow 1
+  -- $ n "1 3 4"
+  -- $ n (mathScale gw 12 8)
+  $ n (chaosScale (logistic 4) 0.37 8 8)
+  -- # scale "c:minor"
+  # s "superpiano"
+
+p1 = chaosScale (logistic 4) 0.37 8 8
+p2 = chaosScale (logistic 4) 0.11 12 8
+p3 = chaosScale (logistic 8) 0.23 8 8
+p4 = chaosScale (logistic 4) 0.91 8 8
+
+d1 -- $ n p1
+  $ note (slowcat [p1,p2,p3,p4, p3, p4, p1])
+  -- # scale "c:minor"
+  # s "gw_snare:5 gw_kick:6"
+
+  p4
+
+
+--- a framework for logistic trajectories
+
+logistic :: Double -> Double -> Double
+logistic r x = r * x * (1 - x)
+
+trajectory :: (a -> a) -> a -> Int -> [a]
+trajectory f x0 n =
+  take n (iterate f x0)
+
+  trajectory (logistic 4) 0.37 8
+
+toNote :: Double -> Note
+toNote x =
+  fromIntegral (round (x * 7) :: Int)
+
+  map toNote (trajectory (logistic 4) 0.37 8)
+
+trajectoryPattern f x0 n =
+  fastcat $
+    map (pure . toNote) $
+    trajectory f x0 n
+
+  trajectoryPattern (logistic 4) 0.37 8
+
+d1 $ n (trajectoryPattern (logistic 4) 0.37 8) # s "bd"
+
+
+chaosPhrase :: (Double -> Double) -> Double -> Int -> Pattern Note
+chaosPhrase f x0 n =
+  fastcat $
+    map (pure . toNote) $
+    trajectory f x0 n
+
+ chaosPhrase (logistic 4) 0.37 8
+
+ fmap (chaosPhrase (logistic 4) 8) rand
+
+ innerJoin $
+  fmap (chaosPhrase (logistic 4) 8) rand
+
+
+  chaosRand
+  :: (Double -> Double)
+  -> Int
+  -> Pattern Double
+  -> Pattern Note
+
+chaosRand f n randomStart =
+  innerJoin $
+    fmap (\x0 -> chaosPhrase f x0 n)
+         (segment 1 randomStart)
+
+    d1 $
+  n (chaosRand (logistic 4) 8 rand)
+  # s "superpiano"
+
+
+
+--- abstraction to combine logistic/mathematic mapping in pure haskell with rand features and every x cycles of tidal
+
+-- dynamic system basis
+  logistic :: Double -> Double -> Double
+logistic r x = r * x * (1 - x)
+
+-- recursive, chaos trajectory
+trajectory :: (Double -> Double) -> Double -> Int -> [Double]
+trajectory f x0 n =
+  take n (iterate f x0)
+
+-- note mapping (seven intervalls fixed)
+toNote :: Double -> Note
+toNote x =
+  fromIntegral (round (x * 7) :: Int)
+
+
+toDegree :: Int -> Double -> Int
+toDegree n x =
+  round (x * fromIntegral n)
+
+-- build a signle phrase
+chaosPhrase :: (Double -> Double) -> Double -> Int -> Pattern Note
+chaosPhrase f x0 n =
+  fastcat $
+    map (pure . toNote) $
+    trajectory f x0 n
+
+-- alt version with max degree
+chaosPhraseDegree f x0 notes maxDegree =
+  fastcat $
+    map (\x ->
+      pure (fromIntegral (toDegree maxDegree x)))
+    (trajectory f x0 notes)
+
+-- build a system where cycle number and rand coming from tidal trigger everything
+chaosRand
+  :: (Double -> Double)
+  -> Int
+  -> Int
+  -> Pattern Double
+  -> Pattern Note
+
+chaosRand f notes cycles randomStart =
+  innerJoin $
+    fmap (\x0 -> chaosPhrase f x0 notes)
+         (slow cycles $ segment 1 randomStart)
+
+    
+-- define the degree as alt version
+chaosRandDegree f notes cycles degree randomStart =
+  innerJoin $
+    fmap (\x0 -> chaosPhraseDegree f x0 notes degree)
+         (slow cycles $ segment 1 randomStart)
+
+
+   d1 $
+  n (chaosRand (logistic 4) 8 2 rand)
+  # s "superpiano"
+
+
+chaosPhraseDegree f x0 notes maxDegree =
+  fastcat $
+    map (\x ->
+      pure (fromIntegral (toDegree maxDegree x)))
+    (trajectory f x0 notes)
+
+chaosRandDegree f notes cycles degree randomStart =
+  innerJoin $
+    fmap (\x0 -> chaosPhraseDegree f x0 notes degree)
+         (slow cycles $ segment 1 randomStart)
+
+    d1 $
+  n (chaosRandDegree (logistic 4) 8 2 12 rand)
+  # s "superpiano"
+
+
+-- GW experiments
+
+phase t = 1 + 3 * t + (1/2) * 0.04 * t**2
+
+gw t = 1 + sin(phase t)
+
+gw 3
+
+chaosRandDegree (gw) 8 2 12 rand
+
+chaosRandDegree (logistic 4) 8 2 12 rand
