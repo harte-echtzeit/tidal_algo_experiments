@@ -1,0 +1,100 @@
+-- some tests to mask parts of a longer pattern in order to filter a shortr pattern
+
+
+-- some simple funs to manipulate lists
+reOrgList n x = drop n x ++ take n x
+maskPat l x = take l x
+maskPat' o l x = take l (drop o x)
+
+ -- a rather long list from the OEIS database
+
+let list_oeis = [1, 1, 2, 2, 4, 2, 6, 4, 6, 4, 10, 4, 12, 6, 8, 8, 16,6,
+                   18, 8, 12, 10, 22, 8, 20, 12, 18, 12, 28, 8, 30, 16]
+
+
+-- generate a short pattern from modified list
+
+let w = reOrgList 6 list_oeis
+    s_pat = maskPat' 2 8 w
+
+
+pick x = maskPat' x 8 w
+
+pick [1,2,3]
+
+  
+d1 $ slow 1 $ note (listToPat (s_pat)) # s "bassdm*4 cpu2*4" # cut 1 #
+gain 0.4
+
+d1 $ fast 8 $ note (cycleChoose s_pat) # s "bassdm:1" # cut 1 #
+gain 0.6
+
+d1 $ n (cycleChoose [1,2,3]*4) # "bd*4" # gain 0.6
+
+
+d2 $ slice 6 (listToPat (reverse s_pat)) $ note (listToPat s_pat) # s "bev" # cut 1 # gain 0.8
+
+hush
+
+
+-- second attempt 24-07-04-> version B = pre-calculating smaller patterns
+
+-- some simple funs to manipulate lists
+reOrgList n x = drop n x ++ take n x
+maskPat' o l x = take l (drop o x)
+
+-- take some data to play with
+let w = reOrgList 8 list_oeis
+    pointerList = [0,23,2,18,12,7,8]
+-- needs some FIX HERE if numbers in pointerList are exiding length of w
+
+let pointerList = [1, 3]
+
+a
+
+-- takes a masked list of 8 entries from the big list with the indices defined in pointerList
+let a = map (\x -> maskPat' x 8 w) pointerList
+-- transforms the list of lists into patterns
+-- let b = map listToPat a
+
+-- here w can also just be 'list_oeis' or any other list
+let maskPats = map listToPat (map (\x -> maskPat' x 8 w) pointerList)
+    maskPats' = map listToPat (map (\x -> maskPat' x 8 w) (reverse pointerList))
+
+-- alternatively = def as a fun and excetute inside orbit -> maybe for agile for live situations
+
+maskPatsGen pointer = map listToPat (map (\x -> maskPat' x 8 w) pointer)
+    
+-- select from these pre-generated patterns (examples only to check patterns)
+select 0.25 maskPats
+squeeze "[0, 1]" maskPats
+
+--some sounds to play with
+d1 $ fast 1 $ n (select "<0.1 0.7 0.2 0.8 0.3 0.5>" maskPats) # s "[supermandolin, cpu2]" # gain 0.8
+
+d1 $ fast 1 $ n (squeeze "<0 2 9 3>" maskPats) # s "[supermandolin, cpu2]" # gain 0.8
+
+
+-- using the function instead of pre-generated patterns
+d1 $ fast 1 $ note (squeeze "<0 3 1 4>" (maskPatsGen [17,12,2,3,4])) # s "[cpu2:0, cpu2:2]" # gain 0.8
+
+note (squeeze "<0 3 1 4>"
+
+
+maskPatsGen [0,1,2,3,4]
+
+-- third attempt 24-07-04 -> taken from tidal club forum --> https://club.tidalcycles.org/t/getting-the-current-cycle-number/459
+
+
+let mylist = [1,2,6,3,50,14,31,34,2,6]
+
+let l = pure (length mylist)
+
+let pat = segment 4 $ (mylist !!) <$> (mod (sig floor) (l))
+
+(mylist !!) <$> (mod (sig floor) (l))
+
+pat
+
+d1 $ s "superpiano" # n pat # gain 0.8
+

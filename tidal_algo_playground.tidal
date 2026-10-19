@@ -11,10 +11,20 @@ chaos f x n =
 -- STARTER
 
 f x = sin (x * x)
+
 fastcat $ map (\x -> note (show (round (60 + x * 12)))) (map f [0..15])
 
--- cleaner = working!
+f x p = x +  p
 
+b = 3
+
+-- as a function
+d1 $  n (fastcat $ map (\x-> pure(f x 3)) [0..7]) # s "superpiano"
+
+-- as all inline text
+d1 $  n (fastcat $ map (\x -> pure (x - 5)) [0..7]) # s "superpiano"
+
+-- a list of possinble haskell functions
 sin
 cos
 tan
@@ -24,7 +34,25 @@ log
 sqrt
 abs
 
-d1 $ n (mathNotes (\x -> sin (x*x)) 32) # s "superpiano"
+
+-- build a fixed number of notes (using a fixed x -range)
+notesRange :: (Double -> Double) -> Int -> Pattern Note
+notesRange f n =
+  fastcat $
+    map (\i ->
+      let x = fromIntegral i / fromIntegral n * 2 * pi
+          y = f x
+          noteVal :: Int
+          noteVal =  round (60 + 12 * y)
+      in pure (fromIntegral noteVal))
+    [0 .. n - 1]
+    
+d1 $ n (notesRange (\x -> sin (x*x)) 8) # s "superpiano"
+
+
+
+
+d1 $ n (mathNotes (\x -> sin (x*x)) 8) # s "superpiano"
 
 f x = exp (-x*x)
 f x = sin x + 0.5 * cos (3*x)
